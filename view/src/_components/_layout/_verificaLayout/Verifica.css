@@ -1,0 +1,18 @@
+.verifica {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 500px;
+    height: 400px;
+    min-width: 300px;
+    min-height: 300px;
+    background-color: white;
+    border-radius: 2px;
+    font-family: Oswald, sans-serif;
+    font-size: 16pt;
+}
+
+.Card span {
+    color: #222;
+}
