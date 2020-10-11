@@ -1,0 +1,62 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.LoginCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 500px;
+    height: 400px;
+    min-width: 300px;
+    min-height: 300px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 2px 2px 3px rgb(65, 65, 65);
+}
+
+.LoginCard input {
+    width: 270px;
+    height: 50px;
+    outline: 0;
+    border: none;
+    border-radius: 5px;
+    font-weight: lighter;
+}
+
+.LoginCard input#email {
+    background-color: rgb(223, 223, 223);
+    padding-left: 20px;
+    color: gray;
+}
+
+.LoginCard input#senha {
+    width: 290px;
+    background-color: rgb(204, 63, 63);
+    color: white;
+    cursor: pointer;
+    transition: 300ms ease-in-out;
+}
+.LoginCard input#senha:hover  {
+    background-color: rgb(235, 76, 76);
+}
+
+.LoginCard .logo {
+    text-align: center;
+    width: 170px;
+    height: 100px;
+    margin-top: -100px;
+    margin-bottom: 50px;
+    border-radius: 10px;
+}
+
+.img{
+    background-image: url('../../_img/logofinal.png');
+    background-repeat: no-repeat;
+    width: 155px;
+    height: 100px;
+    margin-left:10px;
+    background-size: 160px;
+}

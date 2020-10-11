@@ -1,0 +1,20 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+button{
+  border:none;
+  cursor: pointer;
+}
+button:active{
+  border: none;
+}
+body {
+  width: 100vw;
+  height: 100vh;
+  background-color: brown;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}

@@ -1,0 +1,108 @@
+* {
+    font-family: Oswald, sans-serif;
+    font-weight: 300;
+}
+
+.controlData {
+    display: flex;
+    flex-direction: row;
+    width: 1280px;
+    height: 620px;
+    border-radius: 5px;
+}
+
+.controlData .lateralMenor {
+    background-color: #363b48;
+    display: block;
+    justify-content: center;
+    width: 300px;
+    border-radius: 5px 0px 0px 5px;
+    border-right: 1px solid rgba(255, 122, 69, 0);
+}
+
+.controlData .lateralMaior {
+    background-color: rgb(224, 78, 42);
+    flex-grow: 1;
+    width: max-content;
+    border-radius: 0px 0px 5px 0px;
+    align-items: center;
+}
+
+.container .logo {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    width: 1280px;
+    height: 100px;
+    color: white;
+    border-radius: 5px 5px 0px 0px;
+    background-color: #1b1e25;
+}
+
+.container .logo .imgEmail {
+    background-image: url('../../_img/padrao.jpg');
+    background-repeat: no-repeat;
+    background-color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50px;
+    margin-left: 80px;
+    background-size: 50px;
+}
+
+.container .logo .img{
+    background-image: url('../../_img/logofinal.png');
+    background-repeat: no-repeat;
+    width: 155px;
+    height: 100px;
+    margin-left: 400px;
+    background-size: 150px;
+}
+
+.container .controlData .lateralMaior .img2{
+    background-image: url('../../_img/logofinal.png');
+    background-repeat: no-repeat;
+    width: 500px;
+    height: 500px;
+    margin-left: 250px;
+    margin-top: 100px;
+    background-size: 500px;
+}
+
+.container .logo span {
+    padding-left: 10px;
+}
+
+.lateralMenor .navTabs {
+    display: flex;
+    flex-direction: column;
+    height: max-content;
+}
+.lateralMenor .navTabs button{
+    height: 50px;
+    background-color: transparent;
+    color: white;
+}
+.rd_tabs {
+    display: none;
+}
+.rd_tabs:checked ~ label {
+    background-color: #e54e43;
+}
+
+.content {
+    background-color: rgb(231, 231, 231);
+    display: none;
+    position: absolute;
+    border-radius: 0px 0px 5px 0px;
+    left: 460px;
+    top: 135px;
+    width: 980px;
+    height: 620px;
+    text-align: center;
+    font-size: 30pt;
+}
+
+.rd_tabs:checked ~ .content {
+    display: block;
+}
