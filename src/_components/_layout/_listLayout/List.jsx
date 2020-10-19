@@ -29,9 +29,15 @@ export default (props)=>{
                 </div>
             </div>
     <div className="desc"><div><label>{props.seach.input.map((obj)=>obj.sigla+" - "+obj.name+"; ")}</label></div></div></>}
-            {props.page=="create"&&<>
-            <label>ddddddddd</label>
-            </>}
+            {props.page=="create"&&
+            <div className="create">
+                    {!!props.create.input?props.create.input.map((obj)=>{console.log(obj);return <div className="inputs"><label>{obj.name+":"}</label><input placeholder={obj.name}></input></div>}):<></>}
+                <div className="action">
+                    <button className="save" onClick={()=>{}}>Save</button>
+                    <button className="cancel" onClick={()=>props.setPage("seach")}>Cancel</button>
+                </div>
+            </div>
+            }
         </div>
     )
 }

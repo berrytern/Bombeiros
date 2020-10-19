@@ -53,15 +53,32 @@ div.ILMaior div.rseach div.rdesc label{
 div.ILMaior div.rseach div.rdesc div.bend{
     border-right: gray solid 1px;
 }
-
 div.ILMaior div.desc{
     display: flex;
-    
-}
-div.ILMaior div.desc div{
-
 }
 div.ILMaior div.desc label{
     padding: 2px;
     font: bold 10pt Arial;
+}
+div.ILMaior div.create div.inputs{
+    display: flex;
+    flex-direction: row;
+}
+div.ILMaior div.create div.inputs input{
+    flex: 1;
+}
+div.ILMaior div.create div.action{
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+div.ILMaior div.create div.action button{
+    margin-right: 5px;
+    padding: 2px 5px;
+}
+div.ILMaior div.create div.action button.save{
+    background-color: rgb(22, 197, 6);
+}
+div.ILMaior div.create div.action button.cancel{
+    background-color: rgb(219, 21, 21);
 }

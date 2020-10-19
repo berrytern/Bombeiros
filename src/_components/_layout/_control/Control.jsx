@@ -52,8 +52,14 @@ export default (props)=>{
             ],
         },
         create:{
-            
-        }
+            input:[
+                {name:'address'},
+                {name:'fire'},
+                {name:'rescue'},
+                {name:'salvage'}
+            ]
+        },
+        aboult:{}
     };
     const call={
         page:lpage,
@@ -83,8 +89,15 @@ export default (props)=>{
             ],
         },
         create:{
-            
-        }
+            input:[
+                {name:'type'},
+                {name:'requirements'},
+                {name:'timeToEnd'},
+                {name:'address'},
+                {name:'GroupId',option:[]},
+                {name:'Priority',option:[]}
+            ]
+        },
     };
     const report={
         page:lpage,
@@ -109,7 +122,7 @@ export default (props)=>{
         create:{
             input:[
                 {
-                    
+
                 }
             ]
         }
