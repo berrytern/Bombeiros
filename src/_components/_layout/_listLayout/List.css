@@ -1,0 +1,67 @@
+div.ILMaior{
+    display: flex;
+    flex-direction: column;
+    margin: 10vh 10vw 10vh 10vw;
+    align-content: center;
+    justify-self: center;
+    border:  2px solid gray;
+    border-radius: 5px;
+    background-color: rgb(194, 139, 132);
+}
+div.ILMaior div.seach{
+    display: flex;
+    border-bottom:  2px solid gray;
+    padding: 2px;
+}
+div.ILMaior div.seach div.inputs select{
+    height: 36px;
+}
+div.ILMaior div.seach div.inputs input{
+    height: 32px;
+}
+div.ILMaior label{font: normal 10pt Arial;}
+div.seach img{
+    background-image: url("../../_img/add2.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 30px;
+    border: solid 0px gray;
+    background-size: 100px;
+    cursor: pointer;
+}
+div.ILMaior div.rseach{
+    display: flex;
+    flex-direction: column;
+    border-bottom:  2px solid gray;
+    padding: 2px;
+}
+div.ILMaior div.rseach div.rdesc{
+    display: flex;
+    flex-direction: row;
+    flex:1;
+}
+div.ILMaior div.rseach div.rdesc div{
+    display: flex;
+    justify-content: center;
+    flex:1;
+}
+div.ILMaior div.rseach div.rdesc label{
+    font: bold 9pt Arial;
+}
+div.ILMaior div.rseach div.rdesc div.bend{
+    border-right: gray solid 1px;
+}
+
+div.ILMaior div.desc{
+    display: flex;
+    
+}
+div.ILMaior div.desc div{
+
+}
+div.ILMaior div.desc label{
+    padding: 2px;
+    font: bold 10pt Arial;
+}

@@ -21,11 +21,14 @@
 }
 
 .controlData .lateralMaior {
+    display: flex;
+    flex-direction: row;
+
     background-color: rgb(224, 78, 42);
     flex-grow: 1;
-    width: max-content;
     border-radius: 0px 0px 5px 0px;
     align-items: center;
+    justify-content: center;
 }
 
 .container .logo {

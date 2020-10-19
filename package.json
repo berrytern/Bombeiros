@@ -31,5 +31,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.10.4",
+    "eslint-plugin-react-hooks": "^4.1.2"
   }
 }

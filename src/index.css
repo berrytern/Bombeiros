@@ -12,7 +12,7 @@ button:active{
 body {
   width: 100vw;
   height: 100vh;
-  background-color: brown;
+  background-color: #2a2a2a;
   display: flex;
   flex-direction: row;
   justify-content: center;
