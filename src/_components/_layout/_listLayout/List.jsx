@@ -2,10 +2,8 @@ import React from 'react'
 import '../_listLayout/List.css'
 
 export default (props)=>{
-    const getValues=()=>{
-        const result=props.seach.input.map((obj)=>{return[obj.name,obj.value]})
-        return result;
-    }
+    
+    
     return (
         <div className="ILMaior">
             {props.page=="seach"&&<>
@@ -18,7 +16,7 @@ export default (props)=>{
                     </select>:
                     <input style={{width:obj.width}} placeholder={obj.name} onChange={(i)=>{obj.setValue(i.target.value)}} value={obj.value}></input>))}
                 </div>
-                <img onClick={()=>{props.setPage("create")}}/>
+                <img onClick={()=>{props.change(true);props.setPage("create")}}/>
             </div>
             <div className="rseach">
                 <div className="rdesc">
@@ -28,12 +26,19 @@ export default (props)=>{
                     <div></div>
                 </div>
             </div>
-    <div className="desc"><div><label>{props.seach.input.map((obj)=>obj.sigla+" - "+obj.name+"; ")}</label></div></div></>}
+            <div className="desc"><div><label>{props.seach.input.map((obj)=>obj.sigla+" - "+obj.name+"; ")}</label></div></div></>}
             {props.page=="create"&&
             <div className="create">
-                    {!!props.create.input?props.create.input.map((obj)=>{console.log(obj);return <div className="inputs"><label>{obj.name+":"}</label><input placeholder={obj.name}></input></div>}):<></>}
+                    {props.create.input.map((obj)=>{
+                        return !!obj.option? 
+                        <div className="inputs"><label>{obj.name+":"}</label>
+                        <select value={obj.value} onChange={(i)=>{obj.setValue(i.target.value)}}>
+                        <option value="" disabled></option>
+                        {obj.option.map((opt)=><option value={opt}>{opt}</option>)}
+                    </select></div>:
+                        <div className="inputs"><label>{obj.name+":"}</label><input onChange={(i)=>{obj.setValue(i.target.value)}}placeholder={obj.name}></input></div>})}
                 <div className="action">
-                    <button className="save" onClick={()=>{}}>Save</button>
+                    <button className="save" onClick={()=>{props.create.do()}}>Save</button>
                     <button className="cancel" onClick={()=>props.setPage("seach")}>Cancel</button>
                 </div>
             </div>

@@ -60,6 +60,9 @@ div.ILMaior div.desc label{
     padding: 2px;
     font: bold 10pt Arial;
 }
+div.ILMaior div.create{
+    padding: 2px 10px ;
+}
 div.ILMaior div.create div.inputs{
     display: flex;
     flex-direction: row;
