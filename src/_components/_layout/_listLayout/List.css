@@ -35,7 +35,6 @@ div.ILMaior div.rseach{
     display: flex;
     flex-direction: column;
     border-bottom:  2px solid gray;
-    padding: 2px;
 }
 div.ILMaior div.rseach div.rdesc{
     display: flex;
@@ -48,9 +47,24 @@ div.ILMaior div.rseach div.rdesc div{
     flex:1;
 }
 div.ILMaior div.rseach div.rdesc label{
+    text-align: center;
     font: bold 9pt Arial;
+    padding: 5px 0px;
 }
 div.ILMaior div.rseach div.rdesc div.bend{
+    border-right: gray solid 1px;
+}
+div.ILMaior div.rseach div.rlist div{
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid gray;
+}
+div.ILMaior div.rseach div.rlist label{
+    text-align: center;
+    font: bold 9pt Arial;
+    padding: 5px 0px;
+}
+div.ILMaior div.rseach div.rlist div.bend{
     border-right: gray solid 1px;
 }
 div.ILMaior div.desc{

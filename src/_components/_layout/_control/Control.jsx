@@ -1,12 +1,16 @@
-import React from 'react';
+import React,{createContext} from 'react';
 import io from 'socket.io-client'
 import './Control.css'
 import '../_loginLayout/Login.css'
 import List from '../_listLayout/List'
 
+const Context=createContext();
 
-export default (props)=>{
+const Control=(props)=>{
     const url= "http://localhost:4000";
+    const [pg,setPg]=React.useState(1);
+    const [result, setResult]=React.useState([])
+    const [seach, setSeach]=React.useState(true)
     const [change, setChange]=React.useState(true)
     const [zipcode,setZipcode]=React.useState('')
     const [address,setAddress]=React.useState('')
@@ -36,20 +40,39 @@ export default (props)=>{
                     setPriority('')
                     setChange(false)
                 }
+                if(lpage=="seach"){
+                    setSeach(true)
+                    setChange(false)
+                }
             }
         } 
         return ()=>{
               
         }
     })
-    const validate=(responseText)=>{
-        const json=JSON.parse(responseText);
-        if(!!json['token']){
-            setToken=json['token'];
-            return true;
+    const validate=(req,callback,err=()=>{})=>{
+        if(typeof(callback)=="function"){
+            console.log(req.status,req.response)
+            if(req.status==401){
+                toAuth(true)
+            }else{
+                const json=JSON.parse(req.responseText);
+                console.log(json)
+                if(!!json['token']){
+                    setToken(json['token']);
+                    callback(json);
+                }else{
+                    err()
+                }
+            }
         }else{
-            return false;
+            const json=JSON.parse(req.responseText);
+            if(!!json['token']){
+                return json;
+            }else{return false}
         }
+        
+        
     }
     const bomb={
         change:setChange,
@@ -83,6 +106,13 @@ export default (props)=>{
                     setValue:setCountry,
                 }
             ],
+            do:()=>{
+                const socket=io(url)
+                socket.emit("bombs",[token,pg])
+                socket.on("bombs",(list)=>{
+                    setResult(list)
+                })
+            },
         },
         create:{
             input:[
@@ -112,7 +142,6 @@ export default (props)=>{
                         alert("Salvage must be a Number");
                     }else{
                         try{
-                            
                             const req=new XMLHttpRequest();
                             req.open('POST',url+"/bombeiro/create");
                             req.setRequestHeader('Content-Type','application/json');
@@ -121,16 +150,16 @@ export default (props)=>{
                             console.log(json)
                             req.send(json)
                             req.onload=()=>{
-                                if(validate(req.responseText)){
+                                validate(req,(json)=>{
                                     console.log(req.status)
                                     if(req.status==201){
                                         setLpage("seach");
                                     }else{
                                         alert("status: "+req.status);
                                     }
-                                }else{
+                                },()=>{
                                     toAuth(true);
-                                }
+                                })
                             }
                         }catch(e){
                             alert("failed request!!!");
@@ -174,6 +203,17 @@ export default (props)=>{
                     setValue:setCountry,
                 }
             ],
+            result:[
+                [222,333,444,333]
+            ],
+            do:(pg)=>{
+                setResult([])
+                const socket=io(url)
+                socket.emit("bombs",token,pg)
+                socket.on("bombs",(list)=>{
+                    list.map((elem)=>setResult(result.push(elem)))
+                })
+            },
         },
         create:{
             input:[
@@ -216,6 +256,17 @@ export default (props)=>{
                     setValue:setEndpoint,
                 }
             ],
+            result:[
+                [222,333,444,333]
+            ],
+            do:(clear,add,pg)=>{
+                clear()
+                const socket=io(url)
+                socket.emit("bombs",[token,pg])
+                socket.on("bombs",(list)=>{
+                    list.map((elem)=>add(elem))
+                })
+            },
         },
         create:{
             input:[
@@ -272,9 +323,11 @@ export default (props)=>{
                         <div className="lateralMaior"><div className="img2"></div>
                             <span></span>
                         </div>}
-                    {page=="bomb"&&List(bomb)}
-                    {page=="call"&&List(call)}
-                    {page=="report"&&List(report)}
+                    <Context.Provider value={{result:result,setSeach:setSeach,seach:seach,pg:pg,setPg:setPg}}>
+                        <div>{page=="bomb"&&<List p={bomb}/>}
+                        {page=="call"&&<List p={call}/>}
+                        {page=="report"&&<List p={report}/>}</div>
+                    </Context.Provider>
                 </div>
             </div>
         </div>
@@ -289,3 +342,4 @@ export default (props)=>{
     }</>
     )
 }
+export {Context,Control}
