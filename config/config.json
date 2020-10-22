@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "quufwionacegtx",
+    "password": null,
+    "database": "dbmurorcalhtfb",
+    "host": "ec2-34-200-15-192.compute-1.amazonaws.com",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "quufwionacegtx",
+    "password": null,
+    "database": "dbmurorcalhtfb",
+    "host": "ec2-34-200-15-192.compute-1.amazonaws.com",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "quufwionacegtx",
+    "password": null,
+    "database": "dbmurorcalhtfb",
+    "host": "ec2-34-200-15-192.compute-1.amazonaws.com",
+    "dialect": "postgres"
+  }
+}
