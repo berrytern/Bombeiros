@@ -1,14 +1,15 @@
-import React,{createContext} from 'react';
+import React,{createContext,useContext} from 'react';
 import io from 'socket.io-client'
 import './Control.css'
 import '../_loginLayout/Login.css'
 import List from '../_listLayout/List'
 
 const Context=createContext();
-
+const url= "http://localhost:4000";
+let time_check=true
 const Control=(props)=>{
-    const url= "http://localhost:4000";
     const [pg,setPg]=React.useState(1);
+    const [option, setOption]=React.useState([])
     const [result, setResult]=React.useState([])
     const [seach, setSeach]=React.useState(true)
     const [change, setChange]=React.useState(true)
@@ -32,22 +33,52 @@ const Control=(props)=>{
     const [auth,toAuth]=React.useState(!!localStorage.getItem('token')?false:true);
     const [email,setEmail]=React.useState('')
     const [token,setToken]=React.useState(localStorage.getItem('token'))
+    if(time_check==true){
+        const req=new XMLHttpRequest()
+        req.open("POST",url+'/validate')
+        req.setRequestHeader('Authorization','Beare '+token)
+        req.send()
+        req.onload=()=>{
+            if(req.status==401){
+                toAuth(true)
+            }
+        }
+    }
     React.useEffect(()=>{
         if(change==true){
             console.log(page,lpage)
-            if(page=="call"){
-                if(lpage=="create"){
+            if(lpage=="create"){
+                if(page=="call"){
+                    setType('')
                     setPriority('')
-                    setChange(false)
+                    const socket=io(url);
+                    socket.emit("groups",token)
+                    socket.on("groups",(list)=>{
+                        console.log(list)
+                        setOption(list)
+                    })
                 }
-                if(lpage=="seach"){
-                    setSeach(true)
-                    setChange(false)
-                }
+                setChange(false)
             }
+            if(lpage=="seach"){
+                if(page=="bomb"){
+                    setZipcode("")
+                    setAddress("")
+                    setNeighborhood("")
+                    setCountry("")
+                }
+                if(page=="call"){
+                    setType("")
+                    setAddress("")
+                    setPriority("")
+                }
+                setSeach(true)
+                setChange(false)
+            }
+            
+            
         } 
         return ()=>{
-              
         }
     })
     const validate=(req,callback,err=()=>{})=>{
@@ -75,7 +106,6 @@ const Control=(props)=>{
         
     }
     const bomb={
-        change:setChange,
         page:lpage,
         setPage:setLpage,
         seach:{
@@ -106,10 +136,14 @@ const Control=(props)=>{
                     setValue:setCountry,
                 }
             ],
-            do:()=>{
+            do:(i)=>{
+                let algo=[zipcode,address,neighborhood,country]
+                if(!!i){algo[i[1]]=i[0];}
+                console.log(algo)
                 const socket=io(url)
-                socket.emit("bombs",[token,pg])
+                socket.emit("bombs",[token,pg,algo])
                 socket.on("bombs",(list)=>{
+                    console.log(list)
                     setResult(list)
                 })
             },
@@ -177,7 +211,6 @@ const Control=(props)=>{
         }
     };
     const call={
-        change:setChange,
         page:lpage,
         setPage:setLpage,
         seach:{
@@ -199,27 +232,28 @@ const Control=(props)=>{
                     name:'Priority',
                     sigla:"PT",
                     width:60,
-                    value:country,
-                    setValue:setCountry,
+                    value:priority,
+                    setValue:setPriority,
                 }
             ],
-            result:[
-                [222,333,444,333]
-            ],
-            do:(pg)=>{
-                setResult([])
-                const socket=io(url)
-                socket.emit("bombs",token,pg)
-                socket.on("bombs",(list)=>{
-                    list.map((elem)=>setResult(result.push(elem)))
-                })
+            do:(i)=>{
+                let algo=[type,address,country,priority]
+                if(!!i){algo[i[1]]=i[0];}
+                console.log(algo)
+                //const socket=io(url)
+                //socket.emit("calls",[token,pg,algo])
+                //socket.on("calls",(list)=>{
+                 //   console.log(list)
+                //    setResult(list)
+                //})
             },
         },
         create:{
             input:[
                 {name:'type',
-                value:c_type,
-                setValue:setC_type},
+                option:['fire','rescue','salvage'],
+                value:type,
+                setValue:setType},
                 {name:'requirements',
                 value:requirements,
                 setValue:setRequirements},
@@ -227,17 +261,62 @@ const Control=(props)=>{
                 value:timeToEnd,
                 setValue:setTimeToEnd},
                 {name:'address',
-                value:c_address,
-                setValue:setC_address},
+                value:address,
+                setValue:setAddress},
+                {name:'Bomb_zipcode',
+                value:address,
+                option:option,
+                setValue:setAddress},
                 {name:'Priority',
                 option:['1','2','3','4'],
                 value:priority,
                 setValue:setPriority}
-            ]
+            ],
+            do:()=>{
+                console.log(type,requirements,timeToEnd,address,priority)
+                if(!!type&&!!requirements&&!!timeToEnd&&!!address&&!!priority){
+                    if(!isNaN(address)){
+                        alert("address can not be a number!!!");
+                    }else if(address.length<10){
+                        alert("address must have more than 10 characters!!!");
+                    }else if(isNaN(requirements)){
+                            alert("Requirements must be a Number");
+                    }else if(isNaN(timeToEnd)||!timeToEnd){
+                        alert("TimeToEnd must be a Number");
+                    }else if(isNaN(priority)||!priority||priority>4||priority<1){
+                        alert("Priority must be a Number");
+                    }else{
+                        try{
+                            const req=new XMLHttpRequest();
+                            req.open('POST',url+"/call/create");
+                            req.setRequestHeader('Content-Type','application/json');
+                            req.setRequestHeader('Authorization','Beare '+token)
+                            const json=`{"location":"${c_address}","fire":${fire},"rescue":${rescue},"salvage":${salvage}}`
+                            console.log(json)
+                            req.send(json)
+                            req.onload=()=>{
+                                validate(req,(json)=>{
+                                    console.log(req.status)
+                                    if(req.status==201){
+                                        setLpage("seach");
+                                    }else{
+                                        alert("status: "+req.status);
+                                    }
+                                },()=>{
+                                    toAuth(true);
+                                })
+                            }
+                        }catch(e){
+                            alert("failed request!!!");
+                        }
+                    }
+                }else{
+                    alert("there are fields empty");
+                }
+            }
         },
     };
     const report={
-        change:setChange,
         page:lpage,
         setPage:setLpage,
         seach:{
@@ -256,16 +335,8 @@ const Control=(props)=>{
                     setValue:setEndpoint,
                 }
             ],
-            result:[
-                [222,333,444,333]
-            ],
-            do:(clear,add,pg)=>{
-                clear()
-                const socket=io(url)
-                socket.emit("bombs",[token,pg])
-                socket.on("bombs",(list)=>{
-                    list.map((elem)=>add(elem))
-                })
+            do:(i)=>{
+                
             },
         },
         create:{
@@ -311,9 +382,9 @@ const Control=(props)=>{
             <div className="controlData">
                 <div className="lateralMenor">
                     <div className="navTabs">
-                       <button onClick={()=>{setChange(true);setLpage("seach");toPage('bomb')}}>Bombeiros</button>
-                       <button onClick={()=>{setChange(true);setLpage("seach");toPage('call')}}>Ocorrências</button>
-                       <button onClick={()=>{setChange(true);setLpage("seach");toPage('report')}}>Atendimento</button>
+                       <button onClick={()=>{setResult([]);setChange(true);setLpage("seach");toPage('bomb')}}>Bombeiros</button>
+                       <button onClick={()=>{setResult([]);setChange(true);setLpage("seach");toPage('call')}}>Ocorrências</button>
+                       <button onClick={()=>{setResult([]);setChange(true);setLpage("seach");toPage('report')}}>Atendimento</button>
                     </div>
 
                 </div>
@@ -323,7 +394,7 @@ const Control=(props)=>{
                         <div className="lateralMaior"><div className="img2"></div>
                             <span></span>
                         </div>}
-                    <Context.Provider value={{result:result,setSeach:setSeach,seach:seach,pg:pg,setPg:setPg}}>
+                    <Context.Provider value={{result:result,setSeach:setSeach,seach:seach,pg:pg,setPg:setPg,setChange:setChange,option:option}}>
                         <div>{page=="bomb"&&<List p={bomb}/>}
                         {page=="call"&&<List p={call}/>}
                         {page=="report"&&<List p={report}/>}</div>

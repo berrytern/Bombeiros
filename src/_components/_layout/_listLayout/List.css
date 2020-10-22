@@ -39,12 +39,10 @@ div.ILMaior div.rseach{
 div.ILMaior div.rseach div.rdesc{
     display: flex;
     flex-direction: row;
-    flex:1;
 }
 div.ILMaior div.rseach div.rdesc div{
     display: flex;
     justify-content: center;
-    flex:1;
 }
 div.ILMaior div.rseach div.rdesc label{
     text-align: center;
