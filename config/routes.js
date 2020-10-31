@@ -3,7 +3,6 @@ const User=require('../models/user')
 const Bomb=require('../models/bombeiro')
 const UserBomb=require('../models/users_bomb')
 const Call=require('../models/call')
-const Group=require('../models/group')
 const Report=require('../models/report');
 const { Op } = require("sequelize");
 const {io} = require('../connection')
@@ -37,74 +36,88 @@ module.exports = app=>{
     })
     app.post('/bombeiro/create',auth(),async(req,res)=>{
         console.log('/bombeiro/create --post',req.body)
-        const {location,fire,rescue,salvage} = req.body;
-        if(!!location && !!fire && !!rescue && !!salvage){
+        const {name,location,fire,rescue,salvage} = req.body;
+        if(!!name && !!location && !!fire && !!rescue && !!salvage){
             const result=await getLocation(location);
             if(result.status==200){
-                const {address,longitude,latitude,neighborhood,country,zipcode}=result;
-                if(!!zipcode){
-                    const [find,created]=await Bomb.findOrCreate({where:{
-                            neighborhood:{[Op.eq]:neighborhood},country:{[Op.eq]:country},zipcode:{[Op.eq]:zipcode}
-                        },defaults:{
-                            address:address,latitude:latitude,longitude:longitude,neighborhood:neighborhood,country:country,zipcode:zipcode,
-                        }
-                    });
-                    console.log("created: ",created,", find: ",find)
-                    if(find){
-                        console.log(find.id,created.id,"ids")
-                        const defaultGroup={
+                const {streetName,streetNumber,state,city,longitude,latitude,neighborhood,country,zipcode}=result;
+                if(!!streetName&&!!zipcode){
+                    if(!!streetNumber){
+                        const defaultBomb={
+                        name:name,
+                        streetName:streetName,
+                        streetNumber:streetNumber,
+                        state:state,
+                        city:city,
+                        latitude:latitude,
+                        longitude:longitude,
+                        neighborhood:neighborhood,
+                        country:country,
+                        zipcode:zipcode,
                         fire:fire,
                         currentFire:fire,
                         rescue:rescue,
                         currentRescue:rescue,
                         salvage:salvage,
                         currentSalvage:salvage,
-                        BombId:find.id,
                         };
-                        Group.create(defaultGroup).then(
-                            i=>{
-                                if(!!i){
-                                    UserBomb.create({BombId:find.id,UserId:req.user.id}).then(e=>{
-                                        if(!!e){
-                                            res.status(201).json({"id":find.id,"relation_id":e.id,"token":req.user.token})
-                                        }else{
-                                            res.status(500).json({"message":"Bomb created, relation to User failed!","token":req.user.token})
-                                        }
-                                    }).catch(i=>{res.status(409).send()})
+                        const [find,created]=await Bomb.findOrCreate({where:{
+                                country:{[Op.eq]:country},zipcode:{[Op.eq]:zipcode},streetName:{[Op.eq]:streetName},streetName:{[Op.eq]:streetNumber}
+                            },defaults:defaultBomb
+                        });
+                        if(created){
+                            UserBomb.create({BombId:find.id,UserId:req.user.id}).then(e=>{
+                                if(!!e){
+                                    res.status(201).json({"id":find.id,"relation_id":e.id,"token":req.user.token})
                                 }else{
-                                    res.status(500).json({"err":"on create Group","token":req.user.token})
+                                    res.status(500).json({"message":"Bomb created, relation to User failed!","token":req.user.token})
                                 }
-                            }
-                        ).catch(e=>{res.status(409).json({"token":req.user.token})})
+                            }).catch(i=>{res.status(500).send()})
+                        }else{
+                            res.status(409).json({"token":req.user.token})
+                        }
                     }else{
-                        res.status(400).json({"err":"must be precise","token":req.user.token})
+                        res.status(400).json({"err":"must have street number","token":req.user.token})
                     }
                 }else{
-                    res.status(400).json({"token":req.user.token})
+                    res.status(400).json({"err":"must have street","token":req.user.token})
                 }
             }else{res.status(404).json({"token":req.user.token})}
         }else{
             res.status(400).json({"token":req.user.token})
         }  
     })
-    app.post('/group/create',async(req,res)=>{
-        const {bombId,fire,rescue,salvage}=req.body;
-        const exists=await Bomb.findByPk(bombid);
-        if(!!exists){
-            const success=await Group.create({BombId:bombId,fire:fire,rescue:rescue,salvage:salvage})
-            if(!!success){
-                res.status(201).json({"id":success.id});
-            }else{
-                res.status(500).send();
-            }
-        }else{
-            res.status(404).send();
-        }
-    })
-    app.post('/call/create',(req,res)=>{
+    app.post('/call/create',auth(),async(req,res)=>{
         console.log('/call/create --post');
-        const {groupId,type,requirements,timeToEnd}=req.body;
-        if(!!groupId&&!!type&&!!requirements&&!!timeToEnd)
-        Call.create
+        const {type,problem,requirements,timeToEnd,address,priority}=req.body;
+        console.log(type,requirements,timeToEnd,address,priority,req.body)
+        if(!!type&&!!requirements&&!!timeToEnd&&!!address&&!!priority){
+            const result=await getLocation(address);
+            if(result.status==200){
+                const {streetName,streetNumber,state,city,longitude,latitude,neighborhood,country,zipcode}=result;
+                User.findOne({where:{email:{[Op.eq]: req.user.email}},include:Bomb}).then(u=>{
+                    let Bombs=u.Bombs.map(i=>{return {id:i.id}})
+                    Call.create({longitude:longitude,latitude:latitude,type:type,problem:problem,requirements:requirements,timeToEnd:timeToEnd
+                        ,streetName:streetName,
+                        streetNumber:streetNumber,
+                        city:city,priority:priority,UserId:req.user.id}).then(e=>{
+                        const defaultReport={
+                            origem:'Default',
+                            dest:'Catolé, campina grande',
+                            wayPoint:'cruzeiro, campina grande',
+                            time:[5*60,e.timeToEnd,6*60],
+                            CallId:e.id,
+                        };
+                        Report.create({})
+                        res.status(201).send()
+                    }).catch(e=>{console.log('e')})
+                    })
+                }else{
+
+                }
+            
+        }else{
+            res.status(400).json({"token":req.user.token})
+        }
     })
 }

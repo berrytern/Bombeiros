@@ -37,9 +37,10 @@ const getLocation=async(location)=>{
             return {"status":400};
         }else{
             console.log(res);
-            return {"status":200,"address": res[0]['formattedAddress'],"latitude":res[0]['latitude'],"longitude":res[0]['longitude'],"neighborhood":res[0]['extra']['neighborhood'],"country":res[0]['country'],"zipcode":res[0]['zipcode']};
+            return {"status":200,"streetName": res[0]['streetName'],"streetNumber":res[0]['streetNumber'],"city":res[0]['administrativeLevels']['level2long'],"state":res[0]['administrativeLevels']['level1short'],"latitude":res[0]['latitude'],"longitude":res[0]['longitude'],"neighborhood":res[0]['extra']['neighborhood'],"country":res[0]['countryCode'],"zipcode":res[0]['zipcode']};
         }
         
     })
 }
+
 module.exports={getLocation}

@@ -62,4 +62,4 @@ Bombs.hasOne(Group, {
     onUpdate: 'CASCADE'
 })
 Group.belongsTo(Bombs)
-module.exports= Group;
+//module.exports= Group;

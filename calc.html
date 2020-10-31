@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Calc</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+</head>
+<body>
+    <div style="display: flex;height: 100vh;width: 100vw;align-items: center;justify-content: center;">
+        <div style="display: flex; flex-direction: column;">
+            <div><input class='km' type="text" placeholder="KM"/><input class='min' type="text" placeholder="MIN"/><input class='ocup' type="text" placeholder="OCUPATION % 0 a 1"/><input class='pr' type="text" placeholder="priority"/></div>
+            <div><input class='km' type="text" placeholder="KM"/><input class='min' type="text" placeholder="MIN"/><input class='ocup' type="text" placeholder="OCUPATION % 0 a 1"/><input class='pr' type="text" placeholder="priority"/></div>
+            <button onclick="calc()">Submit</button>
+            <label id="result"></label>
+        </div>
+    </div>
+    
+    <script>
+        D=(dist,tempo,urg=1)=>{
+            if(urg==1 || urg==2){
+                return ((dist/27)+(tempo/20))/3
+            }else{
+                return (tempo/20)/3
+            }
+        }
+        F=(km,min,ocup=0,urg=1)=>{
+            if(urg==1){
+                return (D(km,min,urg)*2)+(ocup/9)
+            }if(urg==2){
+                return (D(km,min,urg)*2)+(ocup/11)
+            }if(urg==3){
+                return (D(km,min,urg)*2)+(ocup/14)
+            }if(urg==4){
+                return (D(km,min,urg)*2)
+            }
+        }
+        const calc=()=>{
+            km1=document.getElementsByClassName('km')[0]
+            km2=document.getElementsByClassName('km')[1]
+            min1=document.getElementsByClassName('min')[0]
+            min2=document.getElementsByClassName('min')[1]
+            ocup1=document.getElementsByClassName('ocup')[0]
+            ocup2=document.getElementsByClassName('ocup')[1]
+            pr1=document.getElementsByClassName('pr')[0]
+            pr2=document.getElementsByClassName('pr')[1]
+            result=document.getElementById('result')
+            console.log(km1.value,min1.value,ocup1.value,pr1.value)
+            
+            console.log(km2.value,min2.value,ocup2.value,pr2.value)
+            let choose
+            if(F(km1.value,min1.value,ocup1.value,pr1.value)<F(km2.value,min2.value,ocup2.value,pr2.value)){
+                choose='1º'
+            }else{choose='2º'}
+            result.innerHTML=`o escolhido: ${choose}`
+        }
+    </script>
+</body>
+
+</html>

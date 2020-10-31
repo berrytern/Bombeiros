@@ -1,22 +1,45 @@
 const { TIME } = require("sequelize");
 const { Model, DataTypes, NOW } = require("sequelize");
 const {sequelize} = require('.')
-const Group= require('./group');
+const User = require("./user");
 console.log(sequelize.models)
 const Call = sequelize.define("Calls", {
+  latitude: {
+    type: DataTypes.FLOAT,
+    allowNull:false,
+    validate: {
+      min: -90,
+      max: 90
+    }
+  },
+  longitude: {
+    type: DataTypes.FLOAT,
+    allowNull:false,
+    validate: {
+      min: -180,
+      max: 180
+    }
+  },
   type: {
     type:DataTypes.STRING,
     allowNull: false,
     validate:{
-      isIn: ['fire','rescue','salvage']
+      isIn: [['fire','rescue','salvage']]
     }
   },requirements:{
     type:DataTypes.INTEGER,
     allowNull:false,
   },timeToEnd:{
     type:DataTypes.INTEGER,
-  },address:{
-    type: DataTypes.STRING,
+  },streetName:{
+    type:DataTypes.STRING,
+    allowNull:false
+  },streetNumber:{
+    type:DataTypes.STRING,
+    allowNull:false
+  },city:{
+    type:DataTypes.STRING,
+    allowNull:false,
   },
   problem:{
     type:DataTypes.STRING,
@@ -35,18 +58,21 @@ const Call = sequelize.define("Calls", {
     defaultValue:parseInt(Date.now()/1000),
     allowNull: false,
   },
-  GroupId: {
-    type: DataTypes.INTEGER,
-    allowNull:false,
-    references: {
-      model: Group, // 'Group' would also work
-      key: 'id'
-    }
-  }
+  status:{
+    type: DataTypes.BOOLEAN,
+    defaultValue:false
+  },
+},{
+  hooks: {
+    beforeCreate: (call, options) => {
+      call.problem=call.problem.toUpperCase();
+      call.streetName=call.streetName.toUpperCase();
+      call.city=call.city.toUpperCase();
+    },
+  },
+  sequelize,
 });
-Group.hasMany(Call, {
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
-});
-Call.belongsTo(Group);
+User.hasMany(Call)
+Call.belongsTo(User)
+
 module.exports= Call

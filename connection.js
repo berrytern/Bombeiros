@@ -8,8 +8,8 @@ const dotoken = require('./config/token')
 const Bomb=require('./models/bombeiro')
 const UserBomb = require('./models/users_bomb')
 const { emit } = require('process')
-const Group = require('./models/group')
 const Call = require('./models/call')
+const Report = require('./models/report')
 io.on("connection",socket=>{
     console.log('connected as: ',socket.id);
     socket.on('verify', email=>{
@@ -28,100 +28,166 @@ io.on("connection",socket=>{
         }
         const inPage=4;
         console.log("bombs emit: ",token,pg,input)
-        const user=dotoken.decode(token)
-        User.findOne({where:{email:{[Op.eq]: user.email}}}).then(u=>{
-            user['id']=u.id;
-            UserBomb.findAll({where:{UserId:{[Op.eq]:user.id}},order: [['BombId','ASC']]}).then(e=>{
-                if(e.length>0){
-                    let find={where:{id:{[Op.in]:e.map((i)=>{return i.id})}},offset:inPage-(inPage*pg),limit:inPage}
-                    if(!!input[0]){
-                        find['where']['zipcode']={[Op.like]:'%'+input[0]+'%'}
-                        console.log(find)
-                    }if(!!input[1]){
-                        find['where']['address']={[Op.like]:'%'+input[1]+'%'}
-                        console.log(find)
-                    }if(!!input[2]){
-                        find['where']['neighborhood']={[Op.like]:'%'+input[2]+'%'}
-                        console.log(find)
-                    }if(!!input[3]){
-                        find['where']['country']={[Op.like]:'%'+input[3]+'%'}
-                        console.log(find)
+        try{
+            const user=dotoken.decode(token)
+            User.findOne({where:{email:{[Op.eq]: user.email}},include: Bomb}).then(u=>{
+                if(!!u){
+                    const e=u.Bombs
+                    if(e.length>0){
+                        let next=false;
+                        list=e.filter(i=>{
+                            let bool=true;
+                            if(!!input[0]&&bool){
+                                bool=i.zipcode.includes(input[0].toUpperCase());
+                            }if(!!input[1]&&bool){
+                                bool=i.name.includes(input[1].toUpperCase());
+                            }if(!!input[2]&&bool){
+                                bool=i.streetName.includes(input[2].toUpperCase());
+                            }if(!!input[3]&&bool){
+                                bool=i.streetNumber.includes(input[3].toUpperCase());
+                            }if(!!input[4]&&bool){
+                                bool=i.neighborhood.includes(input[4].toUpperCase());
+                            }
+                            return bool
+                        }).filter((i,index)=>{
+                            if(index>=pg*inPage&&next==false){
+                                next=true
+                            }
+                            return index<pg*inPage&&index>=(pg-1)*inPage}).map(i=>[i.zipcode,i.name,i.streetName,i.streetNumber,i.neighborhood])
+                        const token=dotoken.gen_token({email:user.email})
+                        socket.emit("bombs",list,next,token)
+                    }else{
+                        socket.emit("bombs",e)
                     }
-                    Bomb.findAll(find).then(k=>{
-                        const list=k.map(i=>[i.zipcode,i.address,i.neighborhood,i.country]);
-                        console.log(k,list)
-                        socket.emit("bombs",list)
-                    })
-                    //Promise.all(e.map(async bombs=>{
-                    //    const bomb=await Bomb.findByPk(bombs.id)
-                     //   console.log([bomb.zipcode,bomb.address,bomb.neighborhood,bomb.country])
-                     //   list.push([bomb.zipcode,bomb.address,bomb.neighborhood,bomb.country])
-                    //})).then(i=>{console.log(list);socket.emit("bombs",list)})
                 }else{
-                    socket.emit("bombs",e)
+                    socket.emit('names',false)
                 }
             })
-        })
-
+        }catch(e){
+            socket.emit("bombs",false)
+        }
     })
     socket.on("calls",async([token,pg=1,input])=>{
         if(!pg){
             pg=1;
         }
         const inPage=4;
-        console.log("call emit: ",token,pg,input)
-        const user=dotoken.decode(token)
-        User.findOne({where:{email:{[Op.eq]: user.email}}}).then(u=>{
-            user['id']=u.id;
-            UserBomb.findAll({where:{UserId:{[Op.eq]:user.id}},order: [['BombId','ASC']]}).then(e=>{
-                if(e.length>0){
-                    Group.findAll({where:{BombId:{[Op.in]:e.map((i)=>{return i.BombId})}}}).then(k=>{
-                        let find={where:{GroupId:{[Op.in]:k.map((i)=>{return i.id})}},offset:inPage-(inPage*pg),limit:inPage}
-                        if(!!input[0]){
-                            find['where']['type']={[Op.like]:'%'+input[0]+'%'}
-                            console.log(find)
-                        }if(!!input[1]){
-                            find['where']['address']={[Op.like]:'%'+input[1]+'%'}
-                            console.log(find)
-                        }if(!!input[2]){
-                            find['where']['neighborhood']={[Op.like]:'%'+input[2]+'%'}
-                            console.log(find)
-                        }if(!!input[3]){
-                            find['where']['country']={[Op.like]:'%'+input[3]+'%'}
-                            console.log(find)
+        try{
+            const user=dotoken.decode(token)
+            User.findOne({where:{email:{[Op.eq]: user.email}},include:Call}).then(u=>{
+                if(!!u){
+                    let next=false;
+                    list=u.Calls.filter(i=>{
+                        let bool=true;
+                        if(!!input[0]&&bool){
+                            bool=i.type.includes(input[0]);
+                        }if(!!input[1]&&bool){
+                            bool=i.problem.includes(input[1].toUpperCase());
+                        }if(!!input[2]&&bool){
+                            bool=i.streetName.includes(input[2].toUpperCase());
+                        }if(!!input[3]&&bool){
+                            bool=i.streetNumber.includes(input[3].toUpperCase());
+                        }if(!!input[4]&&bool){
+                            bool=i.priority.includes(input[4].toUpperCase());
                         }
-                        Call.findAll(find)
-                        const list=k.map(i=>[i.zipcode,i.address,i.neighborhood,i.country]);
-                        console.log(k,list)
-                        socket.emit("calls",list)
-                    })
-                    //Promise.all(e.map(async bombs=>{
-                    //    const bomb=await Bomb.findByPk(bombs.id)
-                    //   console.log([bomb.zipcode,bomb.address,bomb.neighborhood,bomb.country])
-                    //   list.push([bomb.zipcode,bomb.address,bomb.neighborhood,bomb.country])
-                    //})).then(i=>{console.log(list);socket.emit("bombs",list)})
+                        return bool
+                    }).filter((i,index)=>{
+                        if(index>=pg*inPage&&next==false){
+                            next=true
+                        }
+                        return index<pg*inPage&&index>=(pg-1)*inPage}).map(i=>[i.type,i.problem,i.streetName,i.streetNumber,i.priority])
+                        
+                        const token=dotoken.gen_token({email:user.email})
+                        socket.emit("calls",list,next,token)
                 }else{
-                    socket.emit("calls",e)
+                    socket.emit('names',false)
                 }
             })
-        })
+        }catch(e){
+            socket.emit("calls",false)
+        }
     })
-    socket.on("groups",token=>{
-        const user=dotoken.decode(token)
-        User.findOne({where:{email:{[Op.eq]: user.email}}}).then(u=>{
-            user['id']=u.id;
-            UserBomb.findAll({where:{UserId:{[Op.eq]:user.id}},order: [['BombId','ASC']]}).then(e=>{
-                if(e.length>0){
-                    console.log(e.map((i)=>{return i.BombId}))
-                    Bomb.findAll({where:{id:{[Op.in]:e.map((i)=>{return i.BombId})}}}).then(k=>{
-                        console.log(k,k.map(i=>i.zipcode))
-                        socket.emit("groups",k.map(i=>i.zipcode))
-                    })
+    socket.on("names",token=>{
+        console.log("names emit: ",token)
+        try{
+            const user=dotoken.decode(token)
+            User.findOne({where:{email:{[Op.eq]: user.email}},include: Bomb}).then(u=>{
+                if(!!u){
+                    const e=u.Bombs
+                    if(e.length>0){
+                        let list=e.map((i)=>i.name)
+                        const token=dotoken.gen_token({email:user.email})
+                        socket.emit('names',list,token)
+                    }
                 }else{
-                    socket.emit("groups",e)
+                    socket.emit('names',false)
                 }
+            }).catch(e=>e)
+        }catch(e){socket.emit('names',false)}
+    })
+    socket.on("reports",async([token,pg=1,input])=>{
+        console.log('emit reports:',input)
+        if(!pg){
+            pg=1;
+        }
+        const inPage=4;
+        try{
+            const user=dotoken.decode(token)
+            User.findOne({where:{email:{[Op.eq]: user.email}}}).then(async u=>{
+                if(!!u){
+                    let opts={where:{UserId:{[Op.eq]:u.id}}}
+                    if(!!input[0]){
+                        const bomb = await Bomb.findOne({where:{name:{[Op.eq]:input[0].toUpperCase()}}})
+                        opts['where']['BombId']={[Op.eq]:bomb.id}
+                    }else if(!!input[1]){
+                        opts['where']['dest']={[Op.like]:'%'+input[1].toUpperCase()+'%'}
+                    }
+                    let rp = await Report.findAll(opts)
+                    let list=[]
+                    let x;
+                    for(x=0;x<rp.length;x++){
+                        const i=rp[x];
+                        const b=await Bomb.findOne({where:{id:{[Op.eq]:i.BombId}}})
+                        list.push({fields:[b.name,i.dest],ondrop:{origem:i.origem,destino:i.dest,inuse:i.inuse,able:i.able,tempo_ida:i.time[0]/60,tempo_volta:i.time[2]/60,tempo_action:i.time[1]/60,img:i.img},drop:false})
+                    }
+                    let next
+                    list.filter((i,index)=>{
+                        if(index>=pg*inPage&&next==false){
+                            next=true
+                        }
+                        return index<pg*inPage&&index>=(pg-1)*inPage})
+                    const token=dotoken.gen_token({email:user.email})
+                    socket.emit("reports",list,next,token)
+                }else{
+                    socket.emit("reports",false)
+                }
+                /*let next=false;
+                list=u.Calls.filter(i=>{
+                    let bool=true;
+                    if(!!input[0]&&bool){
+                        bool=i.type.includes(input[0]);
+                    }if(!!input[1]&&bool){
+                        bool=i.problem.includes(input[1].toUpperCase());
+                    }if(!!input[2]&&bool){
+                        bool=i.streetName.includes(input[2].toUpperCase());
+                    }if(!!input[3]&&bool){
+                        bool=i.streetNumber.includes(input[3].toUpperCase());
+                    }if(!!input[4]&&bool){
+                        bool=i.priority.includes(input[4].toUpperCase());
+                    }
+                    return bool
+                }).filter((i,index)=>{
+                    if(index>=pg*inPage&&next==false){
+                        next=true
+                    }
+                    return index<pg*inPage&&index>=(pg-1)*inPage}).map(i=>[i.type,i.problem,i.streetName,i.streetNumber,i.priority])
+                    
+                    const token=dotoken.gen_token({email:user.email})
+                    socket.emit("reports",list,next,token)*/
             })
-        })
+        }catch(e){
+            //socket.emit("reports",false)
+        }
     })
 })
 module.exports= {api,server,io}
