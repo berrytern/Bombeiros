@@ -15,7 +15,7 @@
     background-color: #363b48;
     display: block;
     justify-content: center;
-    width: 300px;
+    width: 290px;
     border-radius: 5px 0px 0px 5px;
     border-right: 1px solid rgba(255, 122, 69, 0);
 }
@@ -67,8 +67,6 @@
     background-repeat: no-repeat;
     width: 500px;
     height: 500px;
-    margin-left: 250px;
-    margin-top: 100px;
     background-size: 500px;
 }
 

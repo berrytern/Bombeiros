@@ -6,15 +6,23 @@ import List from '../_listLayout/List'
 
 const Context=createContext();
 const url= "http://localhost:4000";
-let time_check=true
 const Control=(props)=>{
     const [pg,setPg]=React.useState(1);
+    const [next,setNext]=React.useState(false);
+    const [dropbox,setDropbox]=React.useState([]);
     const [option, setOption]=React.useState([])
+    const [selected, setSelected]=React.useState('')
+    const [problem, setProblem]=React.useState('')
     const [result, setResult]=React.useState([])
     const [seach, setSeach]=React.useState(true)
     const [change, setChange]=React.useState(true)
     const [zipcode,setZipcode]=React.useState('')
+    const [name,setName]=React.useState('');
     const [address,setAddress]=React.useState('')
+    const [streetName,setStreetName]=React.useState('')
+    const [streetNumber,setStreetNumber]=React.useState('')
+    const [city,setCity]=React.useState('')
+    const [state,setState]=React.useState('')
     const [neighborhood,setNeighborhood]=React.useState('')
     const [country,setCountry]=React.useState('')
     const [c_address,setC_address]=React.useState('')
@@ -31,46 +39,43 @@ const Control=(props)=>{
     const [lpage,setLpage]=React.useState('')
     const [page,toPage]=React.useState('logo');
     const [auth,toAuth]=React.useState(!!localStorage.getItem('token')?false:true);
-    const [email,setEmail]=React.useState('')
+    const [email,setEmail]=React.useState('teste@teste.com')
     const [token,setToken]=React.useState(localStorage.getItem('token'))
-    if(time_check==true){
-        const req=new XMLHttpRequest()
-        req.open("POST",url+'/validate')
-        req.setRequestHeader('Authorization','Beare '+token)
-        req.send()
-        req.onload=()=>{
-            if(req.status==401){
-                toAuth(true)
-            }
-        }
-    }
     React.useEffect(()=>{
         if(change==true){
+            console.log('window.google: ',window.google)
             console.log(page,lpage)
             if(lpage=="create"){
+                if(page=="bomb"){
+                    setName("")
+                }
                 if(page=="call"){
+                    console.log('window.google: ',window.google)
                     setType('')
                     setPriority('')
-                    const socket=io(url);
-                    socket.emit("groups",token)
-                    socket.on("groups",(list)=>{
-                        console.log(list)
-                        setOption(list)
-                    })
                 }
                 setChange(false)
             }
             if(lpage=="seach"){
                 if(page=="bomb"){
+                    setName("")
                     setZipcode("")
                     setAddress("")
                     setNeighborhood("")
                     setCountry("")
                 }
                 if(page=="call"){
+                    setZipcode("")
                     setType("")
-                    setAddress("")
+                    setStreetName("")
+                    setStreetNumber("")
                     setPriority("")
+                    setSelected('')
+                }
+                if(page=="report"){
+                    setName('')
+                    setBegin('')
+                    setEndpoint('')
                 }
                 setSeach(true)
                 setChange(false)
@@ -86,6 +91,8 @@ const Control=(props)=>{
             console.log(req.status,req.response)
             if(req.status==401){
                 toAuth(true)
+            }else if(req.status==201){
+                callback();
             }else{
                 const json=JSON.parse(req.responseText);
                 console.log(json)
@@ -105,6 +112,7 @@ const Control=(props)=>{
         
         
     }
+    //--------------------------------- bomb ------------------------
     const bomb={
         page:lpage,
         setPage:setLpage,
@@ -117,39 +125,53 @@ const Control=(props)=>{
                     value:zipcode,
                     setValue:setZipcode,
                 },{
-                    name:'Address',
-                    sigla:"AD",
-                    width:150,
-                    value:address,
-                    setValue:setAddress,
+                    name:'Name',
+                    sigla:"NM",
+                    width:90,
+                    value:name,
+                    setValue:setName,
+                },{
+                    name:'StreetName',
+                    sigla:"SN",
+                    width:120,
+                    value:streetName,
+                    setValue:setStreetName,
+                },{
+                    name:'StreetNumber',
+                    sigla:"NB",
+                    width:60,
+                    value:streetNumber,
+                    setValue:setStreetNumber,
                 },{
                     name:'Neighborhood',
                     sigla:"NH",
-                    width:120,
+                    width:110,
                     value:neighborhood,
                     setValue:setNeighborhood,
-                },{
-                    name:'Country',
-                    sigla:"CT",
-                    width:60,
-                    value:country,
-                    setValue:setCountry,
                 }
             ],
             do:(i)=>{
-                let algo=[zipcode,address,neighborhood,country]
+                let algo=[zipcode,name,streetName,streetNumber,neighborhood]
                 if(!!i){algo[i[1]]=i[0];}
                 console.log(algo)
                 const socket=io(url)
                 socket.emit("bombs",[token,pg,algo])
-                socket.on("bombs",(list)=>{
-                    console.log(list)
+                socket.on("bombs",(list,next,tk)=>{
+                    if(list===false){
+                        toAuth(true)
+                    }else{
                     setResult(list)
+                    setNext(next)
+                    if(!!tk){setToken(tk)}
+                    }
                 })
             },
         },
         create:{
             input:[
+                {name:'Name',
+                value:name,
+                setValue:setName},
                 {name:'Address',
                 value:c_address,
                 setValue:setC_address},
@@ -164,8 +186,8 @@ const Control=(props)=>{
                 setValue:setSalvage}
             ],
             do:()=>{
-                console.log(c_address,fire,rescue,salvage)
-                if(!!c_address&&!!fire&&!!rescue&&!!salvage){
+                console.log(name,c_address,fire,rescue,salvage)
+                if(!!name&&!!c_address&&!!fire&&!!rescue&&!!salvage){
                     if(c_address.length<10){
                         alert("address must have more than 10 characters!!!");
                     }else if(isNaN(fire)||!fire){
@@ -180,11 +202,11 @@ const Control=(props)=>{
                             req.open('POST',url+"/bombeiro/create");
                             req.setRequestHeader('Content-Type','application/json');
                             req.setRequestHeader('Authorization','Beare '+token)
-                            const json=`{"location":"${c_address}","fire":${fire},"rescue":${rescue},"salvage":${salvage}}`
+                            const json=`{"name":"${name}","location":"${c_address}","fire":${fire},"rescue":${rescue},"salvage":${salvage}}`
                             console.log(json)
                             req.send(json)
                             req.onload=()=>{
-                                validate(req,(json)=>{
+                                validate(req,()=>{
                                     console.log(req.status)
                                     if(req.status==201){
                                         setLpage("seach");
@@ -192,6 +214,7 @@ const Control=(props)=>{
                                         alert("status: "+req.status);
                                     }
                                 },()=>{
+                                    console.log(token)
                                     toAuth(true);
                                 })
                             }
@@ -200,16 +223,12 @@ const Control=(props)=>{
                         }
                     }
                 }else{
-                    alert("there are fields empty");
+                    console.log("there are fields empty");
                 }
             }
         },
-        aboult:{
-            create:[
-            ]
-            
-        }
     };
+    //--------------------------------- call ------------------------
     const call={
         page:lpage,
         setPage:setLpage,
@@ -223,29 +242,48 @@ const Control=(props)=>{
                     value:type,
                     setValue:setType,
                 },{
-                    name:'Address',
-                    sigla:"AD",
-                    width:150,
-                    value:address,
-                    setValue:setAddress,
+                    name:'Problem',
+                    sigla:"PB",
+                    width:120,
+                    value:problem,
+                    setValue:setProblem,
+                },{
+                    name:'StreetName',
+                    sigla:"SN",
+                    width:130,
+                    value:streetName,
+                    setValue:setStreetName,
+                },{
+                    name:'StreetNumber',
+                    sigla:"NB",
+                    width:60,
+                    value:streetNumber,
+                    setValue:setStreetNumber,
                 },{
                     name:'Priority',
                     sigla:"PT",
                     width:60,
+                    option:['1','2','3','4'],
                     value:priority,
                     setValue:setPriority,
                 }
             ],
             do:(i)=>{
-                let algo=[type,address,country,priority]
+                let algo=[type,problem,streetName,streetNumber,priority]
                 if(!!i){algo[i[1]]=i[0];}
                 console.log(algo)
-                //const socket=io(url)
-                //socket.emit("calls",[token,pg,algo])
-                //socket.on("calls",(list)=>{
-                 //   console.log(list)
-                //    setResult(list)
-                //})
+                const socket=io(url)
+                socket.emit("calls",[token,pg,algo])
+                socket.on("calls",(list,next,tk)=>{
+                    console.log(list,next)
+                    if(list===false){
+                        toAuth(true)
+                    }else{
+                        setResult(list)
+                        setNext(next)
+                        if(!!tk){setToken(tk)}
+                    }
+                })
             },
         },
         create:{
@@ -254,6 +292,9 @@ const Control=(props)=>{
                 option:['fire','rescue','salvage'],
                 value:type,
                 setValue:setType},
+                {name:'problem',
+                value:problem,
+                setValue:setProblem},
                 {name:'requirements',
                 value:requirements,
                 setValue:setRequirements},
@@ -263,22 +304,22 @@ const Control=(props)=>{
                 {name:'address',
                 value:address,
                 setValue:setAddress},
-                {name:'Bomb_zipcode',
-                value:address,
-                option:option,
-                setValue:setAddress},
                 {name:'Priority',
                 option:['1','2','3','4'],
                 value:priority,
                 setValue:setPriority}
             ],
             do:()=>{
-                console.log(type,requirements,timeToEnd,address,priority)
-                if(!!type&&!!requirements&&!!timeToEnd&&!!address&&!!priority){
+                console.log(type,problem,requirements,timeToEnd,address,priority)
+                if(!!type&&!!problem&&!!requirements&&!!timeToEnd&&!!address&&!!priority){
                     if(!isNaN(address)){
                         alert("address can not be a number!!!");
                     }else if(address.length<10){
                         alert("address must have more than 10 characters!!!");
+                    }else if(!isNaN(problem)){
+                        alert("problem can not be a number!!!");
+                    }else if(problem.length<4){
+                        alert("problem must have more than 4 characters!!!");
                     }else if(isNaN(requirements)){
                             alert("Requirements must be a Number");
                     }else if(isNaN(timeToEnd)||!timeToEnd){
@@ -291,7 +332,7 @@ const Control=(props)=>{
                             req.open('POST',url+"/call/create");
                             req.setRequestHeader('Content-Type','application/json');
                             req.setRequestHeader('Authorization','Beare '+token)
-                            const json=`{"location":"${c_address}","fire":${fire},"rescue":${rescue},"salvage":${salvage}}`
+                            const json=`{"type":"${type}","problem":"${problem}","requirements":${requirements},"timeToEnd":${timeToEnd*60},"address":"${address}","priority":${priority}}`
                             console.log(json)
                             req.send(json)
                             req.onload=()=>{
@@ -316,34 +357,59 @@ const Control=(props)=>{
             }
         },
     };
+    //--------------------------------- report ------------------------
     const report={
         page:lpage,
         setPage:setLpage,
         seach:{
             input:[
                 {
-                    name:'Begin',
-                    sigla:"ZC",
-                    width:70,
-                    value:begin,
-                    setValue:setBegin,
+                    name:'NameOfBomb',
+                    sigla:"NM",
+                    width:170,
+                    value:selected,
+                    option:true,
+                    do:()=>{
+                        const socket=io(url)
+                        socket.emit('names',token)
+                        socket.on('names',list=>{
+                            if(list===false){
+                                toAuth(true)
+                            }else{
+                                setOption(list)
+                            }
+                        })
+                    },
+                    setValue:setSelected,
                 },{
                     name:'Endpoint',
                     sigla:"AD",
-                    width:150,
+                    width:170,
                     value:endpoint,
                     setValue:setEndpoint,
                 }
             ],
             do:(i)=>{
-                
+                let algo=[selected,endpoint]
+                if(!!i){algo[i[1]]=i[0];}
+                console.log(algo)
+                const socket=io(url)
+                socket.emit('reports',[token,pg,algo])
+                socket.on('reports',(list,next,tk)=>{
+                    if(list===false){
+                        toAuth(true)
+                    }else{
+                        setDropbox(list.map(i=>i.drop))
+                        setNext(next)
+                        setResult(list)
+                        if(!!tk){setToken(tk)}
+                    }
+                })
             },
+            load:true
         },
         create:{
             input:[
-                {
-
-                }
             ]
         }
     };
@@ -359,24 +425,12 @@ const Control=(props)=>{
         toAuth(false);
     })
     }
-    
-    /*const get_request=()=>{
-        console.log('sending')
-        const req=new XMLHttpRequest();
-        req.open('GET','http://localhost:4000'+'/run');
-        req.onload=(e)=>{
-            console.log(req.status);
-            console.log(req.responseText);
-        }
-        req.send()
-    }*/
     return(
     <>{!auth&&
         <div className="container">
             <div className="logo">
                 <div className="imgEmail"></div>
-                <span>teste@teste.com</span>
-                <div className="img"></div> 
+                <span>{email}</span>
             </div>
         
             <div className="controlData">
@@ -394,10 +448,10 @@ const Control=(props)=>{
                         <div className="lateralMaior"><div className="img2"></div>
                             <span></span>
                         </div>}
-                    <Context.Provider value={{result:result,setSeach:setSeach,seach:seach,pg:pg,setPg:setPg,setChange:setChange,option:option}}>
-                        <div>{page=="bomb"&&<List p={bomb}/>}
+                    <Context.Provider value={{dropbox:dropbox,setDropbox:setDropbox,result:result,setSeach:setSeach,seach:seach,pg:pg,setPg:setPg,setChange:setChange,options:option,setSelected:setSelected,selected:selected,pg:pg,setPg:setPg}}>
+                        {page=="bomb"&&<List p={bomb}/>}
                         {page=="call"&&<List p={call}/>}
-                        {page=="report"&&<List p={report}/>}</div>
+                        {page=="report"&&<List p={report}/>}
                     </Context.Provider>
                 </div>
             </div>

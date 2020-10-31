@@ -1,7 +1,6 @@
 div.ILMaior{
     display: flex;
     flex-direction: column;
-    margin: 10vh 10vw 10vh 10vw;
     align-content: center;
     justify-self: center;
     border:  2px solid gray;
@@ -59,7 +58,7 @@ div.ILMaior div.rseach div.rlist div{
 }
 div.ILMaior div.rseach div.rlist label{
     text-align: center;
-    font: bold 9pt Arial;
+    font: normal 8pt Arial;
     padding: 5px 0px;
 }
 div.ILMaior div.rseach div.rlist div.bend{
@@ -70,7 +69,7 @@ div.ILMaior div.desc{
 }
 div.ILMaior div.desc label{
     padding: 2px;
-    font: bold 10pt Arial;
+    font: bold 9pt Arial;
 }
 div.ILMaior div.create{
     padding: 2px 10px ;
@@ -96,4 +95,15 @@ div.ILMaior div.create div.action button.save{
 }
 div.ILMaior div.create div.action button.cancel{
     background-color: rgb(219, 21, 21);
+}
+div.ILMaior div.pg{
+    display: flex;
+    justify-content: center;
+}
+div.ILMaior div.pg button{
+    width: 40px;
+    margin: 0px 3px;
+}
+div.ILMaior div.pg button.pg{
+    width: 20px;
 }
